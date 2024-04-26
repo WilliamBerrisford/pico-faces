@@ -1,0 +1,72 @@
+use embassy_time::{Duration, Timer};
+
+use crate::face::{
+    eye::{BasicEye, Eye},
+    eyebrow::{BasicEyebrow, EyeBrow},
+};
+
+use super::Face;
+
+const EYE_BASE_X: i32 = 26;
+const EYE_BASE_Y: i32 = 40;
+const EYE_HEIGHT: u32 = 16;
+const EYE_X_OFFSET: i32 = 62;
+
+const EYEBROW_BASE_X: i32 = 18;
+const EYEBROW_BASE_Y: i32 = 5;
+const EYEBROW_X_OFFSET: i32 = 62;
+
+pub struct BasicFace {
+    eyes: BasicEye,
+    eyebrows: BasicEyebrow,
+    delay_secs: u64,
+}
+
+impl Face for BasicFace {
+    fn new() -> BasicFace {
+        BasicFace {
+            eyes: BasicEye::new(EYE_BASE_X, EYE_BASE_Y, EYE_HEIGHT, EYE_X_OFFSET),
+            eyebrows: BasicEyebrow::new(EYEBROW_BASE_X, EYEBROW_BASE_Y, EYEBROW_X_OFFSET),
+            delay_secs: 6,
+        }
+    }
+
+    async fn show<DI, SIZE>(
+        &self,
+        display: &mut ssd1306::Ssd1306<DI, SIZE, ssd1306::mode::BufferedGraphicsMode<SIZE>>,
+    ) where
+        DI: ssd1306::prelude::WriteOnlyDataCommand,
+        SIZE: ssd1306::size::DisplaySize,
+    {
+        loop {
+            display.clear();
+            self.eyes.normal(display).await;
+            self.eyebrows.normal(display).await;
+            display.flush().expect("Failed to flush display!");
+            Timer::after(Duration::from_secs(self.delay_secs)).await;
+            self.animate(display).await;
+        }
+    }
+
+    async fn animate<DI, SIZE>(
+        &self,
+        display: &mut ssd1306::Ssd1306<DI, SIZE, ssd1306::mode::BufferedGraphicsMode<SIZE>>,
+    ) where
+        DI: ssd1306::prelude::WriteOnlyDataCommand,
+        SIZE: ssd1306::size::DisplaySize,
+    {
+        let mut divider;
+        for i in 1..=4 {
+            if i < 3 {
+                divider = i;
+            } else {
+                divider = 8 - i + 1;
+            }
+
+            display.clear();
+            self.eyebrows.normal(display).await;
+            self.eyes.blink(display, divider).await;
+            display.flush().expect("Failed to flush display!");
+        }
+    }
+}

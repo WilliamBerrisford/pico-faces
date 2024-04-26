@@ -1,0 +1,7 @@
+target/
+.vscode
+.env
+3DPrinting/
+CAD/
+Circuit/
+secrets/

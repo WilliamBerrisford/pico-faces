@@ -1,0 +1,29 @@
+[workspace]
+
+resolver = "2"
+
+members = [
+    "distance_friend",
+    "distance_friend_core",
+]
+
+[profile.dev]
+debug = 1
+debug-assertions = true
+opt-level = 1
+overflow-checks = true
+
+[profile.release]
+codegen-units = 1
+debug = 1
+debug-assertions = false
+incremental = false
+lto = 'fat'
+opt-level = 'z'
+overflow-checks = false
+
+[workspace.dependencies]
+defmt = "0.3"
+serde = {version = "1.0.176", default-features = false }
+postcard = "1.0.6"
+mqttrs = { version = "0.4", default-features = false }
