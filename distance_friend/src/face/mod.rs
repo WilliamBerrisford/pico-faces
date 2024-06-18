@@ -21,6 +21,8 @@ mod circle_face;
 mod message_waiting;
 #[cfg(feature = "embedded")]
 mod semi_circle_face;
+#[cfg(feature = "embedded")]
+mod sleeping_face;
 
 #[cfg(feature = "embedded")]
 pub use crate::face::basic_face::BasicFace;
@@ -40,6 +42,8 @@ pub use crate::face::message_face::MessageFace;
 pub use crate::face::message_waiting::MessageWaiting;
 #[cfg(feature = "embedded")]
 pub use crate::face::semi_circle_face::SemiCircleFace;
+#[cfg(feature = "embedded")]
+pub use crate::face::sleeping_face::SleepingFace;
 
 pub trait Face {
     fn new() -> Self;

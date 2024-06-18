@@ -8,14 +8,23 @@ pub struct PicoState {
     user_sent_state: AckState,
     // Keeps track of whether the local pico has acked a recieved message.
     local_recieved_state: AckState,
-    // The connection state of the socket
+    // The connection state of the socket.
     socket_connected: bool,
+    // Which face we are using.
+    pub face_state: FaceState,
+    pub sleep_mode: bool,
 }
 
 #[derive(Clone, Copy, Format)]
 enum AckState {
     Ack,
     NoAck,
+}
+
+#[derive(Clone, Copy, Format, PartialEq)]
+pub enum FaceState {
+    Local,
+    Remote,
 }
 
 impl PicoState {
@@ -25,12 +34,13 @@ impl PicoState {
             user_sent_state: AckState::Ack,
             local_recieved_state: AckState::Ack,
             socket_connected: true,
+            face_state: FaceState::Local,
+            sleep_mode: false,
         }
     }
 
     pub fn send_face(&mut self) {
         self.pico_sent_state = AckState::NoAck;
-
         self.user_sent_state = AckState::NoAck;
     }
 
@@ -44,6 +54,7 @@ impl PicoState {
 
     pub fn recieved_face(&mut self) {
         self.local_recieved_state = AckState::NoAck;
+        self.face_state = FaceState::Remote;
     }
 
     pub fn local_acknowledge_recieved(&mut self) {
@@ -54,6 +65,13 @@ impl PicoState {
         match self.local_recieved_state {
             AckState::Ack => false,
             AckState::NoAck => true,
+        }
+    }
+
+    pub fn local_has_acked_message(&mut self) -> bool {
+        match self.local_recieved_state {
+            AckState::Ack => true,
+            AckState::NoAck => false,
         }
     }
 

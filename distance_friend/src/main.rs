@@ -4,6 +4,7 @@
 use cyw43::Control;
 use cyw43_pio::PioSpi;
 use defmt::{debug, info, unwrap, warn};
+use distance_friend_core::external::status::FaceState;
 use embassy_executor::Spawner;
 use embassy_futures::select;
 
@@ -219,14 +220,24 @@ async fn main(spawner: Spawner) {
 }
 
 fn use_state(state: &mut PicoState, remote_face: &mut RemoteFace, local_face: &LocalFace) -> Faces {
+    if state.sleep_mode {
+        debug!("In sleep mode, show blank screen");
+        return Faces::SleepingFace;
+    }
+
     if state.local_has_recieved_message() {
-        Faces::MessageWaiting
-    } else if remote_face.is_selected() {
-        info!("Using remote face!");
-        remote_face.use_face()
-    } else {
-        info!("Using local face!");
-        *local_face.get_face()
+        return Faces::MessageWaiting;
+    }
+
+    match state.face_state {
+        distance_friend_core::external::status::FaceState::Local => {
+            info!("Using local face!");
+            *local_face.get_face()
+        }
+        distance_friend_core::external::status::FaceState::Remote => {
+            info!("Using remote face!");
+            remote_face.get_face()
+        }
     }
 }
 
@@ -263,14 +274,44 @@ async fn on_input(
     serde_buf: [u8; 32],
     state: &mut PicoState,
 ) {
+    match state.sleep_mode {
+        true => on_input_asleep(user_input, state).await,
+        false => on_input_awake(user_input, local_face, state, mqtt_socket, serde_buf).await,
+    }
+
+    // Prevent multiple presses of the button
+    if user_input == UserInput::ButtonPress {
+        Timer::after(Duration::from_millis(250)).await;
+    }
+}
+
+async fn on_input_asleep(user_input: UserInput, state: &mut PicoState) {
+    if user_input == UserInput::ButtonPress {
+        state.sleep_mode = false;
+    }
+}
+
+async fn on_input_awake(
+    user_input: UserInput,
+    local_face: &mut LocalFace,
+    state: &mut PicoState,
+    mqtt_socket: &mut TcpSocket<'_>,
+    serde_buf: [u8; 32],
+) {
     match user_input {
         UserInput::Clockwise => {
-            local_face.next();
-            debug!("Clockwise");
+            if state.local_has_acked_message() {
+                local_face.next();
+                debug!("Clockwise");
+                state.face_state = FaceState::Local
+            }
         }
         UserInput::AntiClockwise => {
-            local_face.prev();
-            debug!("Anti-clockwise");
+            if state.local_has_acked_message() {
+                local_face.prev();
+                debug!("Anti-clockwise");
+                state.face_state = FaceState::Local
+            }
         }
         UserInput::ButtonPress => {
             if state.local_has_recieved_message() {
@@ -279,19 +320,23 @@ async fn on_input(
                 messages::send_message(&Message::UserAck, mqtt_socket, serde_buf, state).await;
                 state.local_acknowledge_recieved();
             } else {
-                info!("Sent face: {}", local_face.get_face());
-
-                messages::send_message(
-                    &Message::ChangeFace(*local_face.get_face()),
-                    mqtt_socket,
-                    serde_buf,
-                    state,
-                )
-                .await;
-                state.send_face();
+                info!("Have not recieved message!");
+                if state.face_state == FaceState::Remote {
+                    state.face_state = FaceState::Local
+                } else if *local_face.get_face() == Faces::GoToSleep {
+                    state.sleep_mode = true
+                } else {
+                    info!("Sending face: {}", local_face.get_face());
+                    messages::send_message(
+                        &Message::ChangeFace(*local_face.get_face()),
+                        mqtt_socket,
+                        serde_buf,
+                        state,
+                    )
+                    .await;
+                    state.send_face();
+                }
             }
-
-            Timer::after(Duration::from_millis(250)).await;
         }
     }
 }

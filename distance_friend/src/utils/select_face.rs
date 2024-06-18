@@ -4,7 +4,7 @@ use ssd1306::{
 
 use crate::face::{
     BasicFace, BasicFaceSmile, BasicNoEyebrows, CircleFace, Connecting, ConnectionFailed, Face,
-    MessageFace, MessageWaiting, SemiCircleFace,
+    MessageFace, MessageWaiting, SemiCircleFace, SleepingFace,
 };
 
 use distance_friend_core::external::select_face::Faces;
@@ -36,5 +36,11 @@ pub async fn show_face<DI, SIZE>(
         }
         Faces::CircleFace => CircleFace::new().show(display).await,
         Faces::BasicSmile => BasicFaceSmile::new().show(display).await,
+        Faces::SleepingFace => SleepingFace::new().show(display).await,
+        Faces::GoToSleep => {
+            MessageFace::new_with_message("Sleep Device")
+                .show(display)
+                .await
+        }
     }
 }

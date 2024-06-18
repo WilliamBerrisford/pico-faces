@@ -7,7 +7,7 @@ use embassy_rp::{
 
 use distance_friend_core::external::encoder::{EncoderDirection, MetaEncoderState};
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum UserInput {
     Clockwise,
     AntiClockwise,
