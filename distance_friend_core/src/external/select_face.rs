@@ -10,15 +10,16 @@ pub enum Faces {
     SemiCircleFace,
     CircleFace,
     BasicSmile,
-    MessageWaiting,
-    Connecting,
-    ConnectionFailed,
+    GoToSleep,
     // Message faces:
     Hello,
     GoodMorning,
     GoodNight,
+    // Special Case Fases
+    MessageWaiting,
+    Connecting,
+    ConnectionFailed,
     SleepingFace,
-    GoToSleep,
 }
 
 impl Default for Faces {
