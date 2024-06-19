@@ -4,7 +4,8 @@
 use cyw43::Control;
 use cyw43_pio::PioSpi;
 use defmt::{debug, info, unwrap, warn};
-use distance_friend_core::external::status::FaceState;
+use distance_friend::utils::select_face::{Faces, LocalFace, RemoteFace};
+use distance_friend::utils::status::{FaceState, PicoState};
 use embassy_executor::Spawner;
 use embassy_futures::select;
 
@@ -21,14 +22,10 @@ use embassy_rp::{
 
 use embassy_time::{Duration, Timer};
 
-use distance_friend_core::external::{
-    messages::Message,
-    select_face::{Faces, LocalFace, RemoteFace},
-    status::PicoState,
-};
-
 use distance_friend::utils::{
-    display, messages, mqtt, net,
+    display, messages,
+    messages::Message,
+    mqtt, net,
     re_input::{self, UserInput},
     select_face,
 };
@@ -230,11 +227,11 @@ fn use_state(state: &mut PicoState, remote_face: &mut RemoteFace, local_face: &L
     }
 
     match state.face_state {
-        distance_friend_core::external::status::FaceState::Local => {
+        FaceState::Local => {
             info!("Using local face!");
             *local_face.get_face()
         }
-        distance_friend_core::external::status::FaceState::Remote => {
+        FaceState::Remote => {
             info!("Using remote face!");
             remote_face.get_face()
         }

@@ -1,25 +1,22 @@
 use defmt::Format;
 use serde::{Deserialize, Serialize};
 
-pub const NUM_FACES: usize = 9;
+pub const NUM_FACES: usize = 8;
 
-#[derive(Clone, Copy, Serialize, Deserialize, Format, PartialEq)]
+#[derive(Clone, Copy, Serialize, Deserialize, Format)]
 pub enum Faces {
     Basic,
     BasicNoEyebrows,
     SemiCircleFace,
     CircleFace,
     BasicSmile,
-    GoToSleep,
+    MessageWaiting,
+    Connecting,
+    ConnectionFailed,
     // Message faces:
     Hello,
     GoodMorning,
     GoodNight,
-    // Special Case Fases
-    MessageWaiting,
-    Connecting,
-    ConnectionFailed,
-    SleepingFace,
 }
 
 impl Default for Faces {
@@ -31,15 +28,22 @@ impl Default for Faces {
 #[derive(Clone, Copy, Serialize, Deserialize, Format, Default)]
 pub struct RemoteFace {
     pub(crate) face: Faces,
+    pub(crate) selected: bool,
 }
 
 impl RemoteFace {
     pub fn set_face(&mut self, chosen_face: Faces) {
         self.face = chosen_face;
+        self.selected = true;
     }
 
-    pub fn get_face(&mut self) -> Faces {
+    pub fn use_face(&mut self) -> Faces {
+        self.selected = false;
         self.face
+    }
+
+    pub fn is_selected(&self) -> bool {
+        self.selected
     }
 }
 
@@ -67,7 +71,6 @@ impl LocalFace {
                 Faces::Hello,
                 Faces::GoodMorning,
                 Faces::GoodNight,
-                Faces::GoToSleep,
             ],
             current_index: 0,
         }

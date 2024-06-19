@@ -1,18 +1,25 @@
-use defmt::{dbg, debug, error, info, warn};
+use core::str::from_utf8;
+
+use defmt::{dbg, debug, error, info, warn, Format};
 use embassy_net::tcp::TcpSocket;
 use embassy_time::{Duration, Timer};
 use mqttrs::Packet;
+use serde::{Deserialize, Serialize};
 
 use crate::utils::mqtt;
 
-use distance_friend_core::external::{
-    messages,
-    messages::Message,
-    select_face::RemoteFace,
-    status::{ActionRequired, PicoState},
-};
+use super::status::{ActionRequired, PicoState};
+
+use super::select_face::{Faces, RemoteFace};
 
 const INVALID_LIMIT: u32 = 10;
+
+#[derive(Clone, Copy, Serialize, Deserialize, Format)]
+pub enum Message {
+    PicoAck,
+    UserAck,
+    ChangeFace(Faces),
+}
 
 pub async fn send_message(
     message: &Message,
@@ -49,9 +56,7 @@ pub async fn listen<'a>(
         match mqtt::listen(read_buf, socket).await {
             Some(Packet::Publish(publish)) => {
                 info!("Valid packet recieved, Topic name: {}", publish.topic_name);
-                if let ActionRequired::SendAck =
-                    messages::process_message(publish, state, remote_face)
-                {
+                if let ActionRequired::SendAck = process_message(publish, state, remote_face) {
                     let _ = send_message(&Message::PicoAck, socket, serde_buf, state);
                     return;
                 }
@@ -72,4 +77,38 @@ pub async fn listen<'a>(
             }
         }
     }
+}
+
+pub fn process_message(
+    publish: mqttrs::Publish<'_>,
+    state: &mut PicoState,
+    remote_face: &mut RemoteFace,
+) -> ActionRequired {
+    let recieved = postcard::from_bytes::<Message>(publish.payload);
+
+    match recieved {
+        Ok(recieved_face) => match recieved_face {
+            Message::PicoAck => {
+                info!("Pico Ack recieved!");
+                state.recieve_pico_ack();
+            }
+            Message::ChangeFace(recieved_face) => {
+                info!("Face state recieved: {}", recieved_face);
+                remote_face.set_face(recieved_face);
+                state.recieved_face();
+                return ActionRequired::SendAck;
+            }
+            Message::UserAck => {
+                info!("User Ack recieved");
+                state.recieve_user_ack();
+            }
+        },
+        Err(_) => {
+            info!(
+                "Not face state, payload as str: {}",
+                from_utf8(publish.payload).unwrap_or("Could not decode payload to str")
+            );
+        }
+    }
+    ActionRequired::None
 }
