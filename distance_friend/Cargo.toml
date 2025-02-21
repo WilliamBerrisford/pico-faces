@@ -66,7 +66,7 @@ arrayvec = { version = "0.7.4", default-features = false }
 dotenvy_macro = "0.15.7"
 cortex-m-semihosting = "0.5.0"
 panic-semihosting = "0.6.0"
-defmt-serial = "0.6.0"
+defmt-serial = "0.10.0"
 rtt-target = "0.4.0"
 portable-atomic = "1.6.0"
 
