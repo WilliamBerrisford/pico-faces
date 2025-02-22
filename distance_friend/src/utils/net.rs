@@ -7,7 +7,7 @@ use embassy_usb::class::cdc_ncm::embassy_net::Device;
 use heapless::Vec;
 
 const MAX_RETRIES: i8 = 10;
-const KNOWN_NETWORKS_NUM: usize = 3;
+const KNOWN_NETWORKS_NUM: usize = 4;
 
 #[derive(Debug)]
 pub struct NetConnectError;
