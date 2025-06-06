@@ -23,7 +23,7 @@ opt-level = 'z'
 overflow-checks = false
 
 [workspace.dependencies]
-defmt = "0.3"
+defmt = "1.0.1"
 serde = {version = "1.0.176", default-features = false }
 postcard = "1.0.6"
 mqttrs = { version = "0.4", default-features = false }
