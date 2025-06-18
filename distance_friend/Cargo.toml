@@ -5,62 +5,39 @@ edition = "2024"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cyw43 = { optional = true, version = "0.1.0", features = [
-    "defmt",
-    "firmware-logs",
-] }
-cyw43-pio = { optional = true, version = "0.1.0", features = ["defmt", "overclock"] }
-embassy-executor = { version = "0.5.0", optional = true, features = [
-    "task-arena-size-131072",
-    "arch-cortex-m", 
-    "executor-thread", 
-    "executor-interrupt", 
-    "defmt", 
-    "integrated-timers"
-] }
+embassy-embedded-hal = { version = "0.3.0", optional = true, features = ["defmt"] }
+embassy-sync = { version = "0.7.0", optional = true, features = ["defmt"] }
+embassy-executor = { version = "0.7.0", optional = true, features = ["arch-cortex-m", "executor-thread", "executor-interrupt", "defmt"] }
+embassy-time = { version = "0.4.0", optional = true, features = ["defmt", "defmt-timestamp-uptime"] }
+embassy-rp = { version = "0.4.0", optional = true, features = ["defmt", "unstable-pac", "time-driver", "critical-section-impl", "rp2040"] }
+embassy-usb = { version = "0.4.0", optional = true, features = ["defmt"] }
+embassy-net = { version = "0.7.0", optional = true, features = ["defmt", "icmp", "tcp", "udp", "raw", "dhcpv4", "medium-ethernet", "dns", "proto-ipv4", "proto-ipv6", "multicast"] }
+embassy-net-wiznet = { version = "0.2.0", optional = true, features = ["defmt"] }
+embassy-futures = { version = "0.1.0", optional = true }
+embassy-usb-logger = { version = "0.4.0", optional = true }
+cyw43 = { version = "0.3.0", optional = true, features = ["defmt", "firmware-logs"] }
+cyw43-pio = { version = "0.4.0", optional = true, features = ["defmt"] }
 
-embassy-time = { optional = true, version = "0.3.0", features = [
-    "defmt",
-    "defmt-timestamp-uptime",
-] }
+cortex-m = { version = "0.7.6", optional = true, features = ["inline-asm"] }
+cortex-m-rt = { version = "0.7.0", optional = true}
+critical-section = "1.1"
+panic-probe = { version = "1.0.0", features = ["print-defmt"] }
 
-embassy-rp = { version = "0.1.0", optional = true, features = [
-    "defmt",
-    "unstable-pac",
-    "time-driver",
-]}
-
-embassy-futures = { version = "0.1.0", optional = true, features = [
-    "defmt",
-] }
-
-embassy-net = { version = "0.4.0", optional = true, features = [
-    "defmt", 
-    "tcp", 
-    "udp", 
-    "dhcpv4", 
-    "medium-ethernet",
-    "dns"
-]}
-
-embassy-boot-rp = { version = "0.2.0" , optional = true}
-embassy-sync = { version = "0.5.0", optional = true }
-embassy-usb = { version = "0.1.0", optional = true}
-
-static_cell = { version = "1.1", features = ["nightly"]}
+embedded-hal-1 = {optional = true, package = "embedded-hal", version = "1.0" }
+embedded-hal-async = { optional = true, version = "1.0" }
+embedded-hal-bus = {optional = true, version = "0.1", features = ["async"] }
+embedded-io-async = {optional = true, version = "0.6.1", features = ["defmt-03"] }
+embedded-storage = {optional = true, version = "0.3" }
+static_cell = "2.1"
+portable-atomic = { version = "1.5", features = ["critical-section"] }
 
 defmt-rtt = "0.4"
-panic-probe = { version = "0.3", features = ["print-defmt"] }
 
-cortex-m = { version = "0.7.6", optional = true, features = ["inline-asm", "critical-section-single-core"] }
-cortex-m-rt = { version = "0.7.0", optional = true}
 pio-proc = "0.2"
 pio = "0.2.1"
 ssd1306 = "0.7.1"
 embedded-graphics = "0.7.1"
-embedded-hal-1 = { optional = true, package = "embedded-hal", version = "1.0.0-rc.3" }
-embedded-hal-async = { optional = true, version = "1.0.0-rc.1"}
-heapless = "0.7.16"
+heapless = "0.8"
 log = "0.4.19"
 byte = "0.2"
 arrayvec = { version = "0.7.4", default-features = false }
@@ -69,7 +46,6 @@ cortex-m-semihosting = "0.5.0"
 panic-semihosting = "0.6.0"
 defmt-serial = "0.10.0"
 rtt-target = "0.4.0"
-portable-atomic = "1.6.0"
 
 # workspace dependencies
 defmt.workspace = true
@@ -80,20 +56,29 @@ distance_friend_core = { path = "../distance_friend_core" }
 
 [features]
 embedded = [
-    "dep:embassy-rp", 
-    "dep:cyw43", 
-    "dep:cyw43-pio",
+    "dep:embassy-embedded-hal", 
+    "dep:embassy-sync",
     "dep:embassy-executor",
     "dep:embassy-time",
-    "dep:embassy-futures",
-    "dep:embassy-net",
+    "dep:embassy-rp",
     "dep:embassy-usb",
+    "dep:embassy-net",
+    "dep:embassy-net-wiznet",
+    "dep:embassy-futures",
+    "dep:embassy-usb-logger",
+    "dep:cyw43", 
+    "dep:cyw43-pio",
+
+    # Non Core embassy deps
     "dep:cortex-m",
     "dep:cortex-m-rt",
+
+    # General embedded deps
     "dep:embedded-hal-1",
     "dep:embedded-hal-async",
-    "dep:embassy-boot-rp",
-    "dep:embassy-sync",
+    "dep:embedded-hal-bus",
+    "dep:embedded-io-async",
+    "dep:embedded-storage",
 ]
 
 default = ["embedded", "one"] 
