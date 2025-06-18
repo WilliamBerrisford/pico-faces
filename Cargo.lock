@@ -1371,10 +1371,9 @@ checksum = "bc4010833aea396656c2f91ee704d51a6f1329ec2ab56ffd00bfd56f7481ea94"
 [[package]]
 name = "mqttrs"
 version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62fc2b40eee1386c55479d534ec95a668e0562d54c6d1dc83bb1962469fec8a7"
+source = "git+https://github.com/00imvj00/mqttrs.git?rev=dd9d381b401b1b7353c43b36123f1b2ea5fa80a1#dd9d381b401b1b7353c43b36123f1b2ea5fa80a1"
 dependencies = [
- "heapless 0.7.17",
+ "heapless 0.8.0",
 ]
 
 [[package]]

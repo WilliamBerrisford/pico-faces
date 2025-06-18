@@ -2,7 +2,7 @@
 #![no_main]
 
 use cyw43::Control;
-use cyw43_pio::PioSpi;
+use cyw43_pio::{DEFAULT_CLOCK_DIVIDER, PioSpi};
 use defmt::{debug, info, unwrap, warn};
 use distance_friend::utils::select_face::{Faces, LocalFace, RemoteFace};
 use distance_friend::utils::status::{FaceState, PicoState};
@@ -30,7 +30,7 @@ use distance_friend::utils::{
     select_face,
 };
 
-use ssd1306::{mode::BufferedGraphicsMode, Ssd1306};
+use ssd1306::{Ssd1306, mode::BufferedGraphicsMode};
 
 use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
@@ -41,17 +41,13 @@ bind_interrupts!(struct Irqs {
 
 #[embassy_executor::task]
 async fn wifi_task(
-    runner: cyw43::Runner<
-        'static,
-        Output<'static, PIN_23>,
-        PioSpi<'static, PIN_25, PIO0, 0, DMA_CH0>,
-    >,
+    runner: cyw43::Runner<'static, Output<'static>, PioSpi<'static, PIO0, 0, DMA_CH0>>,
 ) -> ! {
     runner.run().await
 }
 
 #[embassy_executor::task]
-async fn net_task(stack: &'static Stack<cyw43::NetDriver<'static>>) -> ! {
+async fn net_task(mut stack: embassy_net::Runner<'static, cyw43::NetDriver<'static>>) -> ! {
     stack.run().await
 }
 
@@ -66,15 +62,10 @@ async fn main(spawner: Spawner) {
 
     let mut pio = Pio::new(peripherals.PIO0, Irqs);
     let dma = peripherals.DMA_CH0;
-    let spi: PioSpi<
-        '_,
-        embassy_rp::peripherals::PIN_25,
-        embassy_rp::peripherals::PIO0,
-        0,
-        embassy_rp::peripherals::DMA_CH0,
-    > = PioSpi::new(
+    let spi = PioSpi::new(
         &mut pio.common,
         pio.sm0,
+        DEFAULT_CLOCK_DIVIDER,
         pio.irq0,
         cs,
         peripherals.PIN_24,
@@ -101,19 +92,18 @@ async fn main(spawner: Spawner) {
     // // Setup Wifi stuff
     let config = embassy_net::Config::dhcpv4(Default::default());
 
-    // Generate random seed
+    // TODO, actually generate random seed
     let seed = 0x04cf_e99a_d317_3cea;
 
-    static STACK: StaticCell<Stack<cyw43::NetDriver<'static>>> = StaticCell::new();
+    static STACK: StaticCell<Stack<'static>> = StaticCell::new();
     static RESOURCES: StaticCell<StackResources<10>> = StaticCell::new();
-    let stack = &*STACK.init(Stack::new(
+    let (stack, runner) = embassy_net::new(
         net_device,
         config,
-        RESOURCES.init(StackResources::<10>::new()),
+        RESOURCES.init(StackResources::new()),
         seed,
-    ));
-
-    unwrap!(spawner.spawn(net_task(stack)));
+    );
+    unwrap!(spawner.spawn(net_task(runner)));
 
     let mut local_face = LocalFace::new();
     let mut remote_face = RemoteFace::default();
@@ -134,12 +124,12 @@ async fn main(spawner: Spawner) {
 
     display::init_display(&mut display).await;
 
-    network_connect(&mut display, &mut control, stack).await;
+    network_connect(&mut display, &mut control, &stack).await;
 
     let mut tx_buffer = [0u8; 4096];
     let mut rx_buffer = [0u8; 4096];
 
-    let mut mqtt_socket = mqtt::attempt_setup_mqtt(stack, &mut rx_buffer, &mut tx_buffer).await;
+    let mut mqtt_socket = mqtt::attempt_setup_mqtt(&stack, &mut rx_buffer, &mut tx_buffer).await;
 
     loop {
         match mqtt_socket {
@@ -148,7 +138,8 @@ async fn main(spawner: Spawner) {
             }
             None => {
                 drop(mqtt_socket);
-                mqtt_socket = mqtt::attempt_setup_mqtt(stack, &mut rx_buffer, &mut tx_buffer).await;
+                mqtt_socket =
+                    mqtt::attempt_setup_mqtt(&stack, &mut rx_buffer, &mut tx_buffer).await;
             }
         }
     }
@@ -173,7 +164,7 @@ async fn main(spawner: Spawner) {
         if !state.is_socket_connected() {
             warn!("TCP Socket has disconnected, attempting to reconnect.");
             drop(mqtt_socket);
-            mqtt_socket = mqtt::attempt_setup_mqtt(stack, &mut rx_buffer, &mut tx_buffer)
+            mqtt_socket = mqtt::attempt_setup_mqtt(&stack, &mut rx_buffer, &mut tx_buffer)
                 .await
                 .expect("Failed to connect to mqtt broker");
             state.socket_connected();
@@ -241,7 +232,7 @@ fn use_state(state: &mut PicoState, remote_face: &mut RemoteFace, local_face: &L
 async fn network_connect<DI, SIZE>(
     display: &mut Ssd1306<DI, SIZE, BufferedGraphicsMode<SIZE>>,
     control: &mut Control<'_>,
-    stack: &'static Stack<cyw43::NetDriver<'static>>,
+    stack: &'_ Stack<'_>,
 ) where
     DI: ssd1306::prelude::WriteOnlyDataCommand,
     SIZE: ssd1306::size::DisplaySize,

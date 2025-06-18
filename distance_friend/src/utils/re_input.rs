@@ -1,9 +1,6 @@
 use defmt::debug;
 use embassy_futures::select;
-use embassy_rp::{
-    gpio::Input,
-    peripherals::{PIN_4, PIN_5, PIN_6},
-};
+use embassy_rp::gpio::Input;
 
 use distance_friend_core::external::encoder::{EncoderDirection, MetaEncoderState};
 
@@ -14,11 +11,7 @@ pub enum UserInput {
     ButtonPress,
 }
 
-pub async fn input(
-    clk: &mut Input<'_, PIN_4>,
-    dt: &mut Input<'_, PIN_5>,
-    sw: &mut Input<'_, PIN_6>,
-) -> UserInput {
+pub async fn input(clk: &mut Input<'_>, dt: &mut Input<'_>, sw: &mut Input<'_>) -> UserInput {
     let mut state = MetaEncoderState::new();
 
     loop {

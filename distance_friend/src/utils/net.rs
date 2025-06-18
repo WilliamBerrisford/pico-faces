@@ -1,9 +1,8 @@
-use cyw43::Control;
+use cyw43::{Control, JoinOptions};
 use defmt::{debug, error, info};
 use dotenvy_macro::dotenv;
 use embassy_net::Stack;
 use embassy_time::{Duration, Timer};
-use embassy_usb::class::cdc_ncm::embassy_net::Device;
 use heapless::Vec;
 
 const MAX_RETRIES: i8 = 10;
@@ -14,7 +13,7 @@ pub struct NetConnectError;
 
 pub async fn connect_to_network(
     control: &mut Control<'_>,
-    stack: &Stack<'_, Device<'static, 1514>>,
+    stack: &Stack<'_>,
 ) -> Result<(), NetConnectError> {
     let known_networks: Vec<&str, KNOWN_NETWORKS_NUM> =
         dotenv!("WIFI_NETWORK").split(',').collect();
@@ -23,7 +22,7 @@ pub async fn connect_to_network(
 
     info!("Scanning for networks!");
 
-    let mut all_networks = control.scan().await;
+    let mut all_networks = control.scan(Default::default()).await;
 
     while let Some(network) = all_networks.next().await {
         if let Ok(name) = core::str::from_utf8(&network.ssid) {
@@ -55,7 +54,7 @@ pub async fn connect_to_network(
 
 async fn connect(
     control: &mut Control<'_>,
-    stack: &Stack<'_, Device<'static, 1514>>,
+    stack: &Stack<'_>,
     ssid: &str,
     password: &str,
 ) -> Result<(), NetConnectError> {
@@ -63,7 +62,9 @@ async fn connect(
     let mut connected = false;
 
     for _ in 0..MAX_RETRIES {
-        let connect_result = control.join_wpa2(ssid, password).await;
+        let connect_result = control
+            .join(ssid, JoinOptions::new(password.as_bytes()))
+            .await;
 
         match connect_result {
             Ok(_) => {

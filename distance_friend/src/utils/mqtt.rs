@@ -6,14 +6,13 @@ use embassy_net::{
     tcp::{Error, TcpSocket},
 };
 use embassy_time::Duration;
-use embassy_usb::class::cdc_ncm::embassy_net::Device;
 use heapless::Vec;
 use mqttrs::{Connect, Packet, Pid, Protocol, Subscribe, SubscribeTopic};
 
 const KEEP_ALIVE_TIME: u32 = 120;
 
 pub async fn attempt_setup_mqtt<'a: 'b, 'b>(
-    stack: &'static Stack<'_, Device<'_, 1514>>,
+    stack: &'static Stack<'_>,
     rx_buffer: &'a mut [u8],
     tx_buffer: &'a mut [u8],
 ) -> Option<TcpSocket<'b>> {
@@ -24,16 +23,16 @@ pub async fn attempt_setup_mqtt<'a: 'b, 'b>(
 }
 
 async fn connect_to_broker<'a>(
-    stack: &'static Stack<'_, Device<'_, 1514>>,
+    stack: &'static Stack<'_>,
     rx_buffer: &'a mut [u8],
     tx_buffer: &'a mut [u8],
 ) -> Option<TcpSocket<'a>> {
-    let mut socket = TcpSocket::new(stack, rx_buffer, tx_buffer);
+    let mut socket = TcpSocket::new(*stack, rx_buffer, tx_buffer);
 
     socket.set_keep_alive(Some(Duration::from_secs((KEEP_ALIVE_TIME).into())));
     socket.set_timeout(Some(Duration::from_secs((KEEP_ALIVE_TIME * 2).into())));
 
-    let dns_socket = DnsSocket::new(stack);
+    let dns_socket = DnsSocket::new(*stack);
     info!("Querying dns");
     let mqtt_server_ipv4_address = dns_socket
         .query(dotenv!("MQTT_SERVER"), DnsQueryType::A)
@@ -130,7 +129,8 @@ pub async fn subscribe(socket: &mut TcpSocket<'_>) -> Result<(), Error> {
 
     info!("Subscribing to {}", topic);
     let test_topic = SubscribeTopic {
-        topic_path: topic.into(),
+        // TODO remove unwrap, handle error properly
+        topic_path: topic.try_into().unwrap(),
         qos: mqttrs::QoS::AtMostOnce,
     };
 
