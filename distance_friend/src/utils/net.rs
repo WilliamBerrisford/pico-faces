@@ -14,7 +14,7 @@ pub struct NetConnectError;
 
 pub async fn connect_to_network(
     control: &mut Control<'_>,
-    stack: &Stack<Device<'static, 1514>>,
+    stack: &Stack<'_, Device<'static, 1514>>,
 ) -> Result<(), NetConnectError> {
     let known_networks: Vec<&str, KNOWN_NETWORKS_NUM> =
         dotenv!("WIFI_NETWORK").split(',').collect();
@@ -55,7 +55,7 @@ pub async fn connect_to_network(
 
 async fn connect(
     control: &mut Control<'_>,
-    stack: &Stack<Device<'static, 1514>>,
+    stack: &Stack<'_, Device<'static, 1514>>,
     ssid: &str,
     password: &str,
 ) -> Result<(), NetConnectError> {

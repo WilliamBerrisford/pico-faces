@@ -1,9 +1,9 @@
 use defmt::{debug, error, info};
 use dotenvy_macro::dotenv;
 use embassy_net::{
+    Stack,
     dns::{DnsQueryType, DnsSocket},
     tcp::{Error, TcpSocket},
-    Stack,
 };
 use embassy_time::Duration;
 use embassy_usb::class::cdc_ncm::embassy_net::Device;
@@ -13,7 +13,7 @@ use mqttrs::{Connect, Packet, Pid, Protocol, Subscribe, SubscribeTopic};
 const KEEP_ALIVE_TIME: u32 = 120;
 
 pub async fn attempt_setup_mqtt<'a: 'b, 'b>(
-    stack: &'static Stack<Device<'_, 1514>>,
+    stack: &'static Stack<'_, Device<'_, 1514>>,
     rx_buffer: &'a mut [u8],
     tx_buffer: &'a mut [u8],
 ) -> Option<TcpSocket<'b>> {
@@ -24,7 +24,7 @@ pub async fn attempt_setup_mqtt<'a: 'b, 'b>(
 }
 
 async fn connect_to_broker<'a>(
-    stack: &'static Stack<Device<'_, 1514>>,
+    stack: &'static Stack<'_, Device<'_, 1514>>,
     rx_buffer: &'a mut [u8],
     tx_buffer: &'a mut [u8],
 ) -> Option<TcpSocket<'a>> {
