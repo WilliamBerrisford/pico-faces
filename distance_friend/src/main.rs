@@ -95,7 +95,6 @@ async fn main(spawner: Spawner) {
     // TODO, actually generate random seed
     let seed = 0x04cf_e99a_d317_3cea;
 
-    static STACK: StaticCell<Stack<'static>> = StaticCell::new();
     static RESOURCES: StaticCell<StackResources<10>> = StaticCell::new();
     let (stack, runner) = embassy_net::new(
         net_device,

@@ -12,7 +12,7 @@ use mqttrs::{Connect, Packet, Pid, Protocol, Subscribe, SubscribeTopic};
 const KEEP_ALIVE_TIME: u32 = 120;
 
 pub async fn attempt_setup_mqtt<'a: 'b, 'b>(
-    stack: &'static Stack<'_>,
+    stack: &'a Stack<'_>,
     rx_buffer: &'a mut [u8],
     tx_buffer: &'a mut [u8],
 ) -> Option<TcpSocket<'b>> {
@@ -23,7 +23,7 @@ pub async fn attempt_setup_mqtt<'a: 'b, 'b>(
 }
 
 async fn connect_to_broker<'a>(
-    stack: &'static Stack<'_>,
+    stack: &'a Stack<'_>,
     rx_buffer: &'a mut [u8],
     tx_buffer: &'a mut [u8],
 ) -> Option<TcpSocket<'a>> {
