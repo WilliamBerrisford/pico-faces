@@ -1,4 +1,5 @@
 use embassy_time::{Duration, Timer};
+use embedded_graphics::{draw_target::DrawTarget, pixelcolor::BinaryColor};
 
 use super::Face;
 
@@ -19,7 +20,7 @@ impl Face for SleepingFace {
         SIZE: ssd1306::size::DisplaySize,
     {
         loop {
-            display.clear();
+            display.clear(BinaryColor::Off);
             display.flush().expect("Failed to flush display!");
             Timer::after(Duration::from_secs(DELAY_SECS)).await;
         }

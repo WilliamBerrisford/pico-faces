@@ -1,4 +1,5 @@
 use embassy_time::{Duration, Timer};
+use embedded_graphics::{draw_target::DrawTarget, pixelcolor::BinaryColor};
 
 use crate::face::eye::{BasicEye, Eye};
 
@@ -44,7 +45,7 @@ impl Face for BasicNoEyebrows {
         SIZE: ssd1306::size::DisplaySize,
     {
         loop {
-            display.clear();
+            display.clear(BinaryColor::Off);
             self.eyes.normal(display).await;
             display.flush().expect("Failed to flush display!");
             Timer::after(Duration::from_secs(self.delay_secs)).await;
@@ -67,7 +68,7 @@ impl Face for BasicNoEyebrows {
                 divider = 8 - i + 1;
             }
 
-            display.clear();
+            display.clear(BinaryColor::Off);
             self.eyes.blink(display, divider).await;
             display.flush().expect("Failed to flush display!");
         }

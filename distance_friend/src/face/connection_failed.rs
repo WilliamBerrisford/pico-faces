@@ -1,10 +1,11 @@
 use embassy_time::{Duration, Timer};
+use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::{
-    mono_font::{ascii::FONT_5X7, MonoTextStyle},
+    Drawable,
+    mono_font::{MonoTextStyle, ascii::FONT_5X7},
     pixelcolor::BinaryColor,
     prelude::{Dimensions, Point},
     text::{Alignment, Text},
-    Drawable,
 };
 
 use super::Face;
@@ -37,7 +38,7 @@ impl Face for ConnectionFailed {
 
             top = !top;
 
-            display.clear();
+            display.clear(BinaryColor::Off);
             let style = MonoTextStyle::new(&FONT_5X7, BinaryColor::On);
 
             let text = "WiFi Connection Failed\n Restart when known\n network is in range";

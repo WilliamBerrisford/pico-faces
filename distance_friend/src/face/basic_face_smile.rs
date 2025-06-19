@@ -1,13 +1,15 @@
 use embassy_time::{Duration, Timer};
 
+use embedded_graphics::{draw_target::DrawTarget, pixelcolor::BinaryColor};
+
 use crate::face::{
     eye::{BasicEye, Eye},
     eyebrow::{BasicEyebrow, EyeBrow},
 };
 
 use super::{
-    mouth::{Mouth, Smile},
     Face,
+    mouth::{Mouth, Smile},
 };
 
 const EYE_BASE_X: i32 = 26;
@@ -47,7 +49,7 @@ impl Face for BasicFaceSmile {
         SIZE: ssd1306::size::DisplaySize,
     {
         loop {
-            display.clear();
+            display.clear(BinaryColor::Off);
             self.eyes.normal(display).await;
             self.eyebrows.normal(display).await;
             self.mouth.normal(display).await;
@@ -72,7 +74,7 @@ impl Face for BasicFaceSmile {
                 divider = 8 - i + 1;
             }
 
-            display.clear();
+            display.clear(BinaryColor::Off);
             self.eyebrows.normal(display).await;
             self.eyes.blink(display, divider).await;
             self.mouth.normal(display).await;

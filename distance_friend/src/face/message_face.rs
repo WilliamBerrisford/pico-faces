@@ -1,10 +1,11 @@
 use embassy_time::{Duration, Timer};
+use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::{
-    mono_font::{ascii::FONT_10X20, MonoTextStyle},
+    Drawable,
+    mono_font::{MonoTextStyle, ascii::FONT_10X20},
     pixelcolor::BinaryColor,
     prelude::{Dimensions, Point},
     text::{Alignment, Text},
-    Drawable,
 };
 
 use super::Face;
@@ -45,7 +46,7 @@ impl<'a> Face for MessageFace<'a> {
 
             top = !top;
 
-            display.clear();
+            display.clear(BinaryColor::Off);
             let style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
 
             Text::with_alignment(
