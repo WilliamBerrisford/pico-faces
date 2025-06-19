@@ -38,7 +38,7 @@ impl Face for ConnectionFailed {
 
             top = !top;
 
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             let style = MonoTextStyle::new(&FONT_5X7, BinaryColor::On);
 
             let text = "WiFi Connection Failed\n Restart when known\n network is in range";

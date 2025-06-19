@@ -1,11 +1,11 @@
 use embedded_graphics::{
+    Drawable,
     pixelcolor::BinaryColor,
     prelude::{AngleUnit, Point},
     primitives::{Arc, Primitive, PrimitiveStyle},
-    Drawable,
 };
 use ssd1306::{
-    mode::BufferedGraphicsMode, prelude::WriteOnlyDataCommand, size::DisplaySize, Ssd1306,
+    Ssd1306, mode::BufferedGraphicsMode, prelude::WriteOnlyDataCommand, size::DisplaySize,
 };
 
 use super::Eye;
@@ -30,8 +30,8 @@ impl SemiCircleEye {
         Arc::new(
             Point::new(x, self.base_y),
             height,
+            -180.0.deg(),
             180.0.deg(),
-            -(180.0.deg()),
         )
         .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
         .draw(display)

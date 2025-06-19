@@ -1,11 +1,11 @@
 use embedded_graphics::{
+    Drawable,
     pixelcolor::BinaryColor,
     prelude::{AngleUnit, Point},
     primitives::{Arc, Primitive, PrimitiveStyle},
-    Drawable,
 };
 use ssd1306::{
-    mode::BufferedGraphicsMode, prelude::WriteOnlyDataCommand, size::DisplaySize, Ssd1306,
+    Ssd1306, mode::BufferedGraphicsMode, prelude::WriteOnlyDataCommand, size::DisplaySize,
 };
 
 use super::EyeBrow;
@@ -25,7 +25,7 @@ impl BasicEyebrow {
         DI: WriteOnlyDataCommand,
         SIZE: DisplaySize,
     {
-        Arc::new(Point::new(x, height), 32, -(315.0.deg()), 90.0.deg())
+        Arc::new(Point::new(x, height), 32, 225.0.deg(), 90.0.deg())
             .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
             .draw(display)
             .expect("Failed to draw to display!");

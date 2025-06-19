@@ -46,7 +46,7 @@ impl<'a> Face for MessageFace<'a> {
 
             top = !top;
 
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             let style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
 
             Text::with_alignment(

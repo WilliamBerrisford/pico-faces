@@ -1,9 +1,9 @@
 use embedded_graphics::{
+    Drawable,
     geometry::Point,
     pixelcolor::BinaryColor,
     prelude::AngleUnit,
     primitives::{Arc, Primitive, PrimitiveStyle},
-    Drawable,
 };
 
 use super::Mouth;
@@ -28,8 +28,8 @@ impl Mouth for Smile {
         Arc::new(
             Point::new(self.base_x, self.base_y),
             40,
-            -(45.0.deg()),
-            -(90.0.deg()),
+            -225.0.deg(),
+            -90.0.deg(),
         )
         .into_styled(PrimitiveStyle::with_stroke(BinaryColor::On, 1))
         .draw(display)

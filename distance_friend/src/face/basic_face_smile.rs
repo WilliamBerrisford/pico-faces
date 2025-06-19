@@ -49,7 +49,7 @@ impl Face for BasicFaceSmile {
         SIZE: ssd1306::size::DisplaySize,
     {
         loop {
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             self.eyes.normal(display).await;
             self.eyebrows.normal(display).await;
             self.mouth.normal(display).await;
@@ -74,7 +74,7 @@ impl Face for BasicFaceSmile {
                 divider = 8 - i + 1;
             }
 
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             self.eyebrows.normal(display).await;
             self.eyes.blink(display, divider).await;
             self.mouth.normal(display).await;

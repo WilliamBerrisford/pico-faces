@@ -20,7 +20,7 @@ impl Face for SleepingFace {
         SIZE: ssd1306::size::DisplaySize,
     {
         loop {
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             display.flush().expect("Failed to flush display!");
             Timer::after(Duration::from_secs(DELAY_SECS)).await;
         }

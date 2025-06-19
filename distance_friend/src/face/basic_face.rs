@@ -40,7 +40,7 @@ impl Face for BasicFace {
         SIZE: ssd1306::size::DisplaySize,
     {
         loop {
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             self.eyes.normal(display).await;
             self.eyebrows.normal(display).await;
             display.flush().expect("Failed to flush display!");
@@ -64,7 +64,7 @@ impl Face for BasicFace {
                 divider = 8 - i + 1;
             }
 
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             self.eyebrows.normal(display).await;
             self.eyes.blink(display, divider).await;
             display.flush().expect("Failed to flush display!");

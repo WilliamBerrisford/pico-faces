@@ -38,7 +38,7 @@ impl Face for MessageWaiting {
 
             top = !top;
 
-            display.clear(BinaryColor::Off);
+            let _ = display.clear(BinaryColor::Off);
             let style = MonoTextStyle::new(&FONT_10X20, BinaryColor::On);
 
             let text = "Message\nWaiting!";
